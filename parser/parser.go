@@ -21,6 +21,17 @@ const (
 	Call        // someFunc(x)
 )
 
+var precedences = map[token.Type]int{
+	token.Equals:    Equals,
+	token.NotEquals: Equals,
+	token.LT:        LessGreater,
+	token.GT:        LessGreater,
+	token.Plus:      Sum,
+	token.Minus:     Sum,
+	token.Slash:     Product,
+	token.Asterisk:  Product,
+}
+
 type (
 	prefixParseFn func() ast.Expression
 	infixParseFn  func(ast.Expression) ast.Expression
@@ -47,10 +58,20 @@ func New(l *lexer.Lexer) *Parser {
 		prefixParseFns: make(map[token.Type]prefixParseFn),
 		infixParseFns:  make(map[token.Type]infixParseFn),
 	}
+	// prefix parse funcs:
 	p.registerPrefix(token.Ident, p.parseIdentifier)
 	p.registerPrefix(token.Num, p.parseIntegerLiteral)
 	p.registerPrefix(token.Bang, p.parsePrefixExpression)
 	p.registerPrefix(token.Minus, p.parsePrefixExpression)
+	// infix parse funcs:
+	p.registerInfix(token.Plus, p.parseInfixExpression)
+	p.registerInfix(token.Minus, p.parseInfixExpression)
+	p.registerInfix(token.Slash, p.parseInfixExpression)
+	p.registerInfix(token.Asterisk, p.parseInfixExpression)
+	p.registerInfix(token.Equals, p.parseInfixExpression)
+	p.registerInfix(token.NotEquals, p.parseInfixExpression)
+	p.registerInfix(token.LT, p.parseInfixExpression)
+	p.registerInfix(token.GT, p.parseInfixExpression)
 	// read two tokens so that curToken and peekToken are both set:
 	p.nextToken()
 	p.nextToken()
@@ -144,6 +165,14 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		return nil
 	}
 	leftExp := prefix()
+	for !p.peekTokenIs(token.Semicolon) && precedence < p.peekPrecedence() {
+		infix := p.infixParseFns[p.peekToken.Type]
+		if infix == nil {
+			return leftExp
+		}
+		p.nextToken()
+		leftExp = infix(leftExp)
+	}
 	return leftExp
 }
 
@@ -178,6 +207,18 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 	return &expression
 }
 
+func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
+	expression := ast.InfixExpression{
+		Token:    p.curToken,
+		Operator: p.curToken.Literal,
+		Left:     left,
+	}
+	precedence := p.curPrecedence()
+	p.nextToken()
+	expression.Right = p.parseExpression(precedence)
+	return &expression
+}
+
 func (p *Parser) curTokenIs(t token.Type) bool {
 	return p.curToken.Type == t
 }
@@ -193,6 +234,20 @@ func (p *Parser) expectPeek(t token.Type) bool {
 	}
 	p.peekError(t)
 	return false
+}
+
+func (p *Parser) peekPrecedence() int {
+	if p, ok := precedences[p.peekToken.Type]; ok {
+		return p
+	}
+	return Lowest
+}
+
+func (p *Parser) curPrecedence() int {
+	if p, ok := precedences[p.curToken.Type]; ok {
+		return p
+	}
+	return Lowest
 }
 
 func (p *Parser) peekError(t token.Type) {
