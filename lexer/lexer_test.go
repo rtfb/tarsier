@@ -23,6 +23,9 @@ if (5 < 10) {
 } else {
 	return false;
 }
+
+10 == 10;
+10 != 9;
 `
 	tests := []struct {
 		wantType    token.Type
@@ -93,7 +96,14 @@ if (5 < 10) {
 		{token.False, "false"},
 		{token.Semicolon, ";"},
 		{token.RBrace, "}"},
-
+		{token.Num, "10"},
+		{token.Equals, "=="},
+		{token.Num, "10"},
+		{token.Semicolon, ";"},
+		{token.Num, "10"},
+		{token.NotEquals, "!="},
+		{token.Num, "9"},
+		{token.Semicolon, ";"},
 		{token.EOF, ""},
 	}
 	l := New(input)

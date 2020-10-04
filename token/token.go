@@ -10,14 +10,16 @@ const (
 	Num   = "NUM"   // numeric literal, only integers for now
 
 	// Operators
-	Assign   = "="
-	Plus     = "+"
-	Minus    = "-"
-	Bang     = "!"
-	Asterisk = "*"
-	Slash    = "/"
-	LT       = "<"
-	GT       = ">"
+	Assign    = "="
+	Plus      = "+"
+	Minus     = "-"
+	Bang      = "!"
+	Asterisk  = "*"
+	Slash     = "/"
+	LT        = "<"
+	GT        = ">"
+	Equals    = "=="
+	NotEquals = "!="
 
 	// Delimiters
 	Comma     = ","
