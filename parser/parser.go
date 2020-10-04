@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/rtfb/tarsier/ast"
 	"github.com/rtfb/tarsier/lexer"
 	"github.com/rtfb/tarsier/token"
@@ -12,11 +14,15 @@ type Parser struct {
 	l         *lexer.Lexer
 	curToken  token.Token
 	peekToken token.Token
+	errors    []string
 }
 
 // New creates a Parser.
 func New(l *lexer.Lexer) *Parser {
-	p := Parser{l: l}
+	p := Parser{
+		l:      l,
+		errors: []string{},
+	}
 	// read two tokens so that curToken and peekToken are both set:
 	p.nextToken()
 	p.nextToken()
@@ -41,6 +47,11 @@ func (p *Parser) ParseProgram() *ast.Program {
 		p.nextToken()
 	}
 	return &program
+}
+
+// Errors returns a list of errors encountered during parsing.
+func (p *Parser) Errors() []string {
+	return p.errors
 }
 
 func (p *Parser) parseStatement() ast.Statement {
@@ -86,5 +97,12 @@ func (p *Parser) expectPeek(t token.Type) bool {
 		p.nextToken()
 		return true
 	}
+	p.peekError(t)
 	return false
+}
+
+func (p *Parser) peekError(t token.Type) {
+	msg := fmt.Sprintf("expected next token to be %s, got %s instead",
+		t, p.peekToken.Type)
+	p.errors = append(p.errors, msg)
 }
