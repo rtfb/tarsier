@@ -26,7 +26,7 @@ type (
 	infixParseFn  func(ast.Expression) ast.Expression
 )
 
-// Parser is the object that takes a lexer, reads all tokens from it and
+// Parser is the object that takes a lexer, consumes all tokens from it and
 // constructs a corresponding AST.
 type Parser struct {
 	l      *lexer.Lexer
@@ -49,6 +49,8 @@ func New(l *lexer.Lexer) *Parser {
 	}
 	p.registerPrefix(token.Ident, p.parseIdentifier)
 	p.registerPrefix(token.Num, p.parseIntegerLiteral)
+	p.registerPrefix(token.Bang, p.parsePrefixExpression)
+	p.registerPrefix(token.Minus, p.parsePrefixExpression)
 	// read two tokens so that curToken and peekToken are both set:
 	p.nextToken()
 	p.nextToken()
@@ -138,6 +140,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
+		p.noPrefixParseFnError(p.curToken.Type)
 		return nil
 	}
 	leftExp := prefix()
@@ -165,6 +168,16 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 	return &lit
 }
 
+func (p *Parser) parsePrefixExpression() ast.Expression {
+	expression := ast.PrefixExpression{
+		Token:    p.curToken,
+		Operator: p.curToken.Literal,
+	}
+	p.nextToken()
+	expression.Right = p.parseExpression(Prefix)
+	return &expression
+}
+
 func (p *Parser) curTokenIs(t token.Type) bool {
 	return p.curToken.Type == t
 }
@@ -185,6 +198,11 @@ func (p *Parser) expectPeek(t token.Type) bool {
 func (p *Parser) peekError(t token.Type) {
 	msg := fmt.Sprintf("expected next token to be %s, got %s instead",
 		t, p.peekToken.Type)
+	p.errors = append(p.errors, msg)
+}
+
+func (p *Parser) noPrefixParseFnError(t token.Type) {
+	msg := fmt.Sprintf("no prefix parse function for %s found", t)
 	p.errors = append(p.errors, msg)
 }
 
