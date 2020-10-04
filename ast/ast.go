@@ -48,6 +48,20 @@ func (ls *LetStatement) TokenLiteral() string {
 	return ls.Token.Literal
 }
 
+// ReturnStatement is the AST subtree containing a return statement.
+type ReturnStatement struct {
+	Token       token.Token // the 'return' token itself
+	ReturnValue Expression
+}
+
+func (rs *ReturnStatement) statementNode() {
+}
+
+// TokenLiteral implements Node.
+func (rs *ReturnStatement) TokenLiteral() string {
+	return rs.Token.Literal
+}
+
 // Identifier is the AST subtree containing an identifier.
 type Identifier struct {
 	Token token.Token
