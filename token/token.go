@@ -10,8 +10,14 @@ const (
 	Num   = "NUM"   // numeric literal, only integers for now
 
 	// Operators
-	Assign = "="
-	Plus   = "+"
+	Assign   = "="
+	Plus     = "+"
+	Minus    = "-"
+	Bang     = "!"
+	Asterisk = "*"
+	Slash    = "/"
+	LT       = "<"
+	GT       = ">"
 
 	// Delimiters
 	Comma     = ","
@@ -24,11 +30,21 @@ const (
 	// Keywords
 	Function = "FUNCTION"
 	Let      = "LET"
+	True     = "TRUE"
+	False    = "FALSE"
+	If       = "IF"
+	Else     = "ELSE"
+	Return   = "RETURN"
 )
 
 var keywords = map[string]Type{
-	"fn":  Function,
-	"let": Let,
+	"fn":     Function,
+	"let":    Let,
+	"true":   True,
+	"false":  False,
+	"if":     If,
+	"else":   Else,
+	"return": Return,
 }
 
 // Type identifies a token type.
