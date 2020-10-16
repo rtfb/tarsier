@@ -9,60 +9,66 @@ import (
 )
 
 func TestLetStatements(t *testing.T) {
-	input := `
-let x = 6;
-let y = 10;
-let foobar = 838383;
-`
-	l := lexer.New(input)
-	p := New(l)
-	program := p.ParseProgram()
-	checkParseErrors(t, p)
-	if program == nil {
-		t.Fatalf("ParseProgram() returned nil")
-	}
-	if len(program.Statements) != 3 {
-		t.Fatalf("len(program.Statements): want=3, got=%d", len(program.Statements))
-	}
 	tests := []struct {
+		input     string
 		wantIdent string
+		wantValue interface{}
 	}{
-		{"x"},
-		{"y"},
-		{"foobar"},
+		{"let x = 5;", "x", 5},
+		{"let y = true;", "y", true},
+		{"let foobar = y;", "foobar", "y"},
+		// TODO: handle a test case like this:
+		// {"let sum = add(7, 3);", "sum", "add(7, 3)"},
 	}
-	for i, tt := range tests {
-		stmt := program.Statements[i]
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParseErrors(t, p)
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain 1 statement, got=%d\n",
+				len(program.Statements))
+		}
+		stmt := program.Statements[0]
 		if !testLetStatement(t, stmt, tt.wantIdent) {
+			return
+		}
+		val := stmt.(*ast.LetStatement).Value
+		if !testLiteralExpression(t, val, tt.wantValue) {
 			return
 		}
 	}
 }
 
 func TestReturnStatements(t *testing.T) {
-	input := `
-return 5;
-return 10;
-return 993322;
-`
-	l := lexer.New(input)
-	p := New(l)
-	program := p.ParseProgram()
-	checkParseErrors(t, p)
-	if program == nil {
-		t.Fatalf("ParseProgram() returned nil")
+	tests := []struct {
+		input    string
+		wantExpr interface{}
+	}{
+		{"return 5", "5"},
+		{"return x;", "x"},
+		{"return a + b;", "(a + b)"},
 	}
-	if len(program.Statements) != 3 {
-		t.Fatalf("len(program.Statements): want=3, got=%d", len(program.Statements))
-	}
-	for _, stmt := range program.Statements {
-		returnStmt, ok := stmt.(*ast.ReturnStatement)
-		if !ok {
-			t.Errorf("stmt not *ast.ReturnStatement, got=%T", stmt)
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParseErrors(t, p)
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain 1 statement, got=%d\n",
+				len(program.Statements))
 		}
-		if returnStmt.TokenLiteral() != "return" {
-			t.Errorf("returnStmt.TokenLiteral not 'return', got=%q",
-				returnStmt.TokenLiteral())
+		stmt := program.Statements[0]
+		if stmt.TokenLiteral() != "return" {
+			t.Fatalf("s.TokenLiteral not 'return', got=%q\n", stmt.TokenLiteral())
+		}
+		retStmt, ok := stmt.(*ast.ReturnStatement)
+		if !ok {
+			t.Fatalf("stmt is not *ast.ReturnStatement, got=%T", stmt)
+		}
+		got := retStmt.ReturnValue.String()
+		if got != tt.wantExpr {
+			t.Fatalf("not expected return expr: want=%s, got=%s", tt.wantExpr, got)
 		}
 	}
 }
