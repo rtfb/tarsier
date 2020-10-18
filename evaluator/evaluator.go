@@ -5,6 +5,12 @@ import (
 	"github.com/rtfb/tarsier/object"
 )
 
+// The only two possible values for Boolean objects.
+var (
+	True  = &object.Boolean{Value: true}
+	False = &object.Boolean{Value: false}
+)
+
 // Eval evaluates an AST passed to it and returns an object it evaluates to.
 func Eval(node ast.Node) object.Object {
 	switch node := node.(type) {
@@ -18,6 +24,8 @@ func Eval(node ast.Node) object.Object {
 		return &object.Integer{
 			Value: node.Value,
 		}
+	case *ast.Boolean:
+		return nativeBoolToBooleanObject(node.Value)
 	}
 	return nil
 }
@@ -28,4 +36,11 @@ func evalStatements(stmts []ast.Statement) object.Object {
 		result = Eval(statement)
 	}
 	return result
+}
+
+func nativeBoolToBooleanObject(input bool) *object.Boolean {
+	if input {
+		return True
+	}
+	return False
 }
