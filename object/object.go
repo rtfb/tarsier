@@ -4,9 +4,10 @@ import "fmt"
 
 // The constant values for Type.
 const (
-	ObjTypeInteger = "INTEGER"
-	ObjTypeBoolean = "BOOLEAN"
-	ObjTypeNull    = "NULL"
+	ObjTypeInteger     = "INTEGER"
+	ObjTypeBoolean     = "BOOLEAN"
+	ObjTypeNull        = "NULL"
+	ObjTypeReturnValue = "RETURN_VALUE"
 )
 
 // Type is an identifier for a type of an object.
@@ -59,4 +60,19 @@ func (n *Null) Type() Type {
 // Inspect implements Object.
 func (n *Null) Inspect() string {
 	return "null"
+}
+
+// ReturnValue encapsulates the value after the return statement.
+type ReturnValue struct {
+	Value Object
+}
+
+// Type implements Object.
+func (rv *ReturnValue) Type() Type {
+	return ObjTypeReturnValue
+}
+
+// Inspect implements Object.
+func (rv *ReturnValue) Inspect() string {
+	return rv.Value.Inspect()
 }
