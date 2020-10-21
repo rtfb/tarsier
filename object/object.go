@@ -8,6 +8,7 @@ const (
 	ObjTypeBoolean     = "BOOLEAN"
 	ObjTypeNull        = "NULL"
 	ObjTypeReturnValue = "RETURN_VALUE"
+	ObjTypeError       = "ERROR"
 )
 
 // Type is an identifier for a type of an object.
@@ -75,4 +76,21 @@ func (rv *ReturnValue) Type() Type {
 // Inspect implements Object.
 func (rv *ReturnValue) Inspect() string {
 	return rv.Value.Inspect()
+}
+
+// Error represents an execution error.
+// TODO: extend this with stack trace and source code line:col (the latter will
+// require extending the lexer to attach the line:col info to the tokens).
+type Error struct {
+	Message string
+}
+
+// Type implements Object.
+func (e *Error) Type() Type {
+	return ObjTypeError
+}
+
+// Inspect implements Object.
+func (e *Error) Inspect() string {
+	return "ERROR: " + e.Message
 }

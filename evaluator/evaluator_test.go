@@ -132,6 +132,59 @@ func TestReturnStatements(t *testing.T) {
 	}
 }
 
+func TestErrorHandling(t *testing.T) {
+	tests := []struct {
+		input   string
+		wantMsg string
+	}{
+		{
+			"5 + true",
+			"type mismatch: INTEGER + BOOLEAN",
+		},
+		{
+			"5 + true; 5",
+			"type mismatch: INTEGER + BOOLEAN",
+		},
+		{
+			"-true",
+			"unknown operator: -BOOLEAN",
+		},
+		{
+			"true + false",
+			"unknown operator: BOOLEAN + BOOLEAN",
+		},
+		{
+			"5; true + false; 5",
+			"unknown operator: BOOLEAN + BOOLEAN",
+		},
+		{
+			"if (10 > 1) { true + false }",
+			"unknown operator: BOOLEAN + BOOLEAN",
+		},
+		{
+			`
+			if (10 > 1) {
+				if (10 > 1) {
+					return true + false;
+				}
+				return 1;
+			}`,
+			"unknown operator: BOOLEAN + BOOLEAN",
+		},
+	}
+	for _, tt := range tests {
+		evaled := testEval(tt.input)
+		errObj, ok := evaled.(*object.Error)
+		if !ok {
+			t.Errorf("no error object returned, got=%T (%+v)", evaled, evaled)
+			continue
+		}
+		if errObj.Message != tt.wantMsg {
+			t.Errorf("wrong error message, want=%q, got=%q", tt.wantMsg, errObj.Message)
+		}
+	}
+}
+
 func testNullObject(t *testing.T, obj object.Object) bool {
 	if obj != Null {
 		t.Errorf("object if nut Null, got=%T (%+v)", obj, obj)
