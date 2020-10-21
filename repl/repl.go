@@ -7,6 +7,7 @@ import (
 
 	"github.com/rtfb/tarsier/evaluator"
 	"github.com/rtfb/tarsier/lexer"
+	"github.com/rtfb/tarsier/object"
 	"github.com/rtfb/tarsier/parser"
 )
 
@@ -15,6 +16,7 @@ const prompt = ">> "
 // Start starts an interactive REPL.
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	env := object.NewEnv()
 	for {
 		fmt.Printf(prompt)
 		scanned := scanner.Scan()
@@ -29,7 +31,7 @@ func Start(in io.Reader, out io.Writer) {
 			printParserErrors(out, p.Errors())
 			continue
 		}
-		evaluated := evaluator.Eval(program)
+		evaluated := evaluator.Eval(program, env)
 		if evaluated != nil {
 			io.WriteString(out, evaluated.Inspect())
 			io.WriteString(out, "\n")
