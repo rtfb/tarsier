@@ -1,6 +1,12 @@
 package object
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+	"strings"
+
+	"github.com/rtfb/tarsier/ast"
+)
 
 // The constant values for Type.
 const (
@@ -9,6 +15,7 @@ const (
 	ObjTypeNull        = "NULL"
 	ObjTypeReturnValue = "RETURN_VALUE"
 	ObjTypeError       = "ERROR"
+	ObjTypeFunction    = "FUNCTION"
 )
 
 // Type is an identifier for a type of an object.
@@ -93,4 +100,31 @@ func (e *Error) Type() Type {
 // Inspect implements Object.
 func (e *Error) Inspect() string {
 	return "ERROR: " + e.Message
+}
+
+// Function represents a function object.
+type Function struct {
+	Parameters []*ast.Identifier
+	Body       *ast.BlockStatement
+	Env        *Env
+}
+
+// Type implements Object.
+func (f *Function) Type() Type {
+	return ObjTypeFunction
+}
+
+// Inspect implements Object.
+func (f *Function) Inspect() string {
+	var out bytes.Buffer
+	params := make([]string, len(f.Parameters))
+	for i, p := range f.Parameters {
+		params[i] = p.String()
+	}
+	out.WriteString("fn(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") {\n")
+	out.WriteString(f.Body.String())
+	out.WriteString("\n}")
+	return out.String()
 }
