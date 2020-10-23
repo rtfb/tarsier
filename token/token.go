@@ -6,8 +6,9 @@ const (
 	EOF     = "EOF"
 
 	// Identifiers and literals
-	Ident = "IDENT" // add, foo, bar, x, y, etc
-	Num   = "NUM"   // numeric literal, only integers for now
+	Ident  = "IDENT" // add, foo, bar, x, y, etc
+	Num    = "NUM"   // numeric literal, only integers for now
+	String = "STRING"
 
 	// Operators
 	Assign    = "="

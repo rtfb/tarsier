@@ -11,6 +11,7 @@ import (
 // The constant values for Type.
 const (
 	ObjTypeInteger     = "INTEGER"
+	ObjTypeString      = "STRING"
 	ObjTypeBoolean     = "BOOLEAN"
 	ObjTypeNull        = "NULL"
 	ObjTypeReturnValue = "RETURN_VALUE"
@@ -40,6 +41,21 @@ func (i *Integer) Type() Type {
 // Inspect implements Object.
 func (i *Integer) Inspect() string {
 	return fmt.Sprintf("%d", i.Value)
+}
+
+// String is an implementation for a string Object type.
+type String struct {
+	Value string
+}
+
+// Type implements Object.
+func (s *String) Type() Type {
+	return ObjTypeString
+}
+
+// Inspect implements Object.
+func (s *String) Inspect() string {
+	return s.Value
 }
 
 // Boolean is an implementation for a boolean Object type.
