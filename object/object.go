@@ -17,6 +17,7 @@ const (
 	ObjTypeReturnValue = "RETURN_VALUE"
 	ObjTypeError       = "ERROR"
 	ObjTypeFunction    = "FUNCTION"
+	ObjTypeBuiltin     = "BUILTIN"
 )
 
 // Type is an identifier for a type of an object.
@@ -143,4 +144,22 @@ func (f *Function) Inspect() string {
 	out.WriteString(f.Body.String())
 	out.WriteString("\n}")
 	return out.String()
+}
+
+// BuiltinFunction is a signature for implementation of any built-in function.
+type BuiltinFunction func(args ...Object) Object
+
+// Builtin represents a language-provided built-in function.
+type Builtin struct {
+	Fn BuiltinFunction
+}
+
+// Type implements Object.
+func (b *Builtin) Type() Type {
+	return ObjTypeBuiltin
+}
+
+// Inspect implements Object.
+func (b *Builtin) Inspect() string {
+	return "builtin function"
 }
