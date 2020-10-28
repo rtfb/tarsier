@@ -18,6 +18,7 @@ const (
 	ObjTypeError       = "ERROR"
 	ObjTypeFunction    = "FUNCTION"
 	ObjTypeBuiltin     = "BUILTIN"
+	ObjTypeArray       = "ARRAY"
 )
 
 // Type is an identifier for a type of an object.
@@ -162,4 +163,27 @@ func (b *Builtin) Type() Type {
 // Inspect implements Object.
 func (b *Builtin) Inspect() string {
 	return "builtin function"
+}
+
+// Array is an object containing an ordered list of other objects.
+type Array struct {
+	Elements []Object
+}
+
+// Type implements Object.
+func (a *Array) Type() Type {
+	return ObjTypeArray
+}
+
+// Inspect implements Object.
+func (a *Array) Inspect() string {
+	var out bytes.Buffer
+	elements := make([]string, len(a.Elements))
+	for i, e := range a.Elements {
+		elements[i] = e.Inspect()
+	}
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ", "))
+	out.WriteString("]")
+	return out.String()
 }
