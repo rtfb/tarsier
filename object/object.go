@@ -3,6 +3,7 @@ package object
 import (
 	"bytes"
 	"fmt"
+	"hash/fnv"
 	"strings"
 
 	"github.com/rtfb/tarsier/ast"
@@ -19,7 +20,19 @@ const (
 	ObjTypeFunction    = "FUNCTION"
 	ObjTypeBuiltin     = "BUILTIN"
 	ObjTypeArray       = "ARRAY"
+	ObjTypeHash        = "HASH"
 )
+
+// HashKey contains a hash sum.
+type HashKey struct {
+	Type  Type
+	Value uint64
+}
+
+// Hashable describes an interface for objects that can be hashed.
+type Hashable interface {
+	HashKey() HashKey
+}
 
 // Type is an identifier for a type of an object.
 type Type string
@@ -45,6 +58,14 @@ func (i *Integer) Inspect() string {
 	return fmt.Sprintf("%d", i.Value)
 }
 
+// HashKey returns a hashed value for an int.
+func (i *Integer) HashKey() HashKey {
+	return HashKey{
+		Type:  i.Type(),
+		Value: uint64(i.Value),
+	}
+}
+
 // String is an implementation for a string Object type.
 type String struct {
 	Value string
@@ -60,6 +81,16 @@ func (s *String) Inspect() string {
 	return s.Value
 }
 
+// HashKey returns a hashed value for a string.
+func (s *String) HashKey() HashKey {
+	h := fnv.New64a()
+	h.Write([]byte(s.Value))
+	return HashKey{
+		Type:  s.Type(),
+		Value: h.Sum64(),
+	}
+}
+
 // Boolean is an implementation for a boolean Object type.
 type Boolean struct {
 	Value bool
@@ -73,6 +104,20 @@ func (b *Boolean) Type() Type {
 // Inspect implements Object.
 func (b *Boolean) Inspect() string {
 	return fmt.Sprintf("%t", b.Value)
+}
+
+// HashKey returns a hashed value for a bool.
+func (b *Boolean) HashKey() HashKey {
+	var value uint64
+	if b.Value {
+		value = 1
+	} else {
+		value = 0
+	}
+	return HashKey{
+		Type:  b.Type(),
+		Value: value,
+	}
 }
 
 // Null is an implementation of a null Object.
@@ -185,5 +230,34 @@ func (a *Array) Inspect() string {
 	out.WriteString("[")
 	out.WriteString(strings.Join(elements, ", "))
 	out.WriteString("]")
+	return out.String()
+}
+
+// HashPair represents a
+type HashPair struct {
+	Key   Object
+	Value Object
+}
+
+type Hash struct {
+	Pairs map[HashKey]HashPair
+}
+
+// Type implements Object.
+func (h *Hash) Type() Type {
+	return ObjTypeHash
+}
+
+// Inspect implements Object.
+func (h *Hash) Inspect() string {
+	var out bytes.Buffer
+	pairs := make([]string, 0, len(h.Pairs))
+	for _, pair := range h.Pairs {
+		pairs = append(pairs, fmt.Sprintf("%s: %s", pair.Key.Inspect(),
+			pair.Value.Inspect()))
+	}
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
 	return out.String()
 }
