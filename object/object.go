@@ -21,6 +21,7 @@ const (
 	ObjTypeBuiltin     = "BUILTIN"
 	ObjTypeArray       = "ARRAY"
 	ObjTypeHash        = "HASH"
+	ObjTypeQuote       = "QUOTE"
 )
 
 // HashKey contains a hash sum.
@@ -260,4 +261,19 @@ func (h *Hash) Inspect() string {
 	out.WriteString(strings.Join(pairs, ", "))
 	out.WriteString("}")
 	return out.String()
+}
+
+// Quote encapsulates an AST node in an object.
+type Quote struct {
+	Node ast.Node
+}
+
+// Type implements Object.
+func (q *Quote) Type() Type {
+	return ObjTypeQuote
+}
+
+// Inspect implements Object.
+func (q *Quote) Inspect() string {
+	return "QUOTE(" + q.Node.String() + ")"
 }
