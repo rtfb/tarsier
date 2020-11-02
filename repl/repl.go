@@ -17,6 +17,7 @@ const prompt = ">> "
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 	env := object.NewEnv()
+	macroEnv := object.NewEnv()
 	for {
 		fmt.Printf(prompt)
 		scanned := scanner.Scan()
@@ -31,7 +32,9 @@ func Start(in io.Reader, out io.Writer) {
 			printParserErrors(out, p.Errors())
 			continue
 		}
-		evaluated := evaluator.Eval(program, env)
+		evaluator.DefineMacros(program, macroEnv)
+		expandedProgram := evaluator.ExpandMacros(program, macroEnv)
+		evaluated := evaluator.Eval(expandedProgram, env)
 		if evaluated != nil {
 			io.WriteString(out, evaluated.Inspect())
 			io.WriteString(out, "\n")
