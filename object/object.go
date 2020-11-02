@@ -22,6 +22,7 @@ const (
 	ObjTypeArray       = "ARRAY"
 	ObjTypeHash        = "HASH"
 	ObjTypeQuote       = "QUOTE"
+	ObjTypeMacro       = "MACRO"
 )
 
 // HashKey contains a hash sum.
@@ -276,4 +277,31 @@ func (q *Quote) Type() Type {
 // Inspect implements Object.
 func (q *Quote) Inspect() string {
 	return "QUOTE(" + q.Node.String() + ")"
+}
+
+// Macro represents a macro object.
+type Macro struct {
+	Parameters []*ast.Identifier
+	Body       *ast.BlockStatement
+	Env        *Env
+}
+
+// Type implements Object.
+func (m *Macro) Type() Type {
+	return ObjTypeMacro
+}
+
+// Inspect implements Object.
+func (m *Macro) Inspect() string {
+	var out bytes.Buffer
+	params := make([]string, len(m.Parameters))
+	for i, p := range m.Parameters {
+		params[i] = p.String()
+	}
+	out.WriteString("macro(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") {\n")
+	out.WriteString(m.Body.String())
+	out.WriteString("\n}")
+	return out.String()
 }
