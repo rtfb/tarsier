@@ -302,7 +302,7 @@ func evalIdentifier(node *ast.Identifier, env *object.Env) object.Object {
 	if builtin, ok := builtins[node.Value]; ok {
 		return builtin
 	}
-	return newError("identifier not found: " + node.Value)
+	return newError("identifier not found: %q", node.Value)
 }
 
 func evalIndexExpression(left, index object.Object) object.Object {

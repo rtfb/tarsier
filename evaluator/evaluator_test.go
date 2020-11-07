@@ -173,7 +173,7 @@ func TestErrorHandling(t *testing.T) {
 		},
 		{
 			"foobar;",
-			"identifier not found: foobar",
+			`identifier not found: "foobar"`,
 		},
 		{
 			`"Hello" - "World"`,
