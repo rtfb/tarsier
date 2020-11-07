@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 
 	"github.com/rtfb/tarsier/evaluator"
 	"github.com/rtfb/tarsier/lexer"
@@ -48,6 +49,17 @@ func Start(in io.Reader, out io.Writer, prompt string) {
 func DoFile(in io.Reader, out io.Writer) error {
 	env := object.NewEnv()
 	macroEnv := object.NewEnv()
+	f, err := os.Open("stdlib/arr.ts")
+	if err != nil {
+		return err
+	}
+	if err := doFile(f, out, env, macroEnv); err != nil {
+		return err
+	}
+	return doFile(in, out, env, macroEnv)
+}
+
+func doFile(in io.Reader, out io.Writer, env, macroEnv *object.Env) error {
 	input, err := ioutil.ReadAll(in)
 	if err != nil {
 		return err
