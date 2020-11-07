@@ -35,7 +35,7 @@ func TestQuote(t *testing.T) {
 		// },
 	}
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		quote, ok := evaluated.(*object.Quote)
 		if !ok {
 			t.Fatalf("expected *object.Quote, got=%T (%+v)", evaluated, evaluated)
@@ -99,7 +99,7 @@ func TestQuoteUnquote(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		quote, ok := evaluated.(*object.Quote)
 		if !ok {
 			t.Fatalf("expected *object.Quote, got=%T (%+v)", evaluated, evaluated)

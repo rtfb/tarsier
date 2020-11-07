@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"strconv"
+	"testing"
 
 	"github.com/rtfb/tarsier/ast"
 	"github.com/rtfb/tarsier/lexer"
@@ -477,4 +478,16 @@ func (p *Parser) registerPrefix(tokenType token.Type, fn prefixParseFn) {
 
 func (p *Parser) registerInfix(tokenType token.Type, fn infixParseFn) {
 	p.infixParseFns[tokenType] = fn
+}
+
+func (p *Parser) CheckParseErrors(t *testing.T) {
+	errors := p.Errors()
+	if len(errors) == 0 {
+		return
+	}
+	t.Errorf("parser has %d errors", len(errors))
+	for _, msg := range errors {
+		t.Errorf("parser error: %q", msg)
+	}
+	t.FailNow()
 }
