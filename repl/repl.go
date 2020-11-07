@@ -16,6 +16,11 @@ import (
 
 const Prompt = ">> "
 
+var stdlibFiles = []string{
+	"stdlib/arr.ts",
+	"stdlib/unless.ts",
+}
+
 // Start starts an interactive REPL.
 func Start(in io.Reader, out io.Writer, prompt string) {
 	scanner := bufio.NewScanner(in)
@@ -49,14 +54,23 @@ func Start(in io.Reader, out io.Writer, prompt string) {
 func DoFile(in io.Reader, out io.Writer) error {
 	env := object.NewEnv()
 	macroEnv := object.NewEnv()
-	f, err := os.Open("stdlib/arr.ts")
-	if err != nil {
-		return err
-	}
-	if err := doFile(f, out, env, macroEnv); err != nil {
+	if err := doStdlib(stdlibFiles, out, env, macroEnv); err != nil {
 		return err
 	}
 	return doFile(in, out, env, macroEnv)
+}
+
+func doStdlib(files []string, out io.Writer, env, macroEnv *object.Env) error {
+	for _, file := range files {
+		f, err := os.Open(file)
+		if err != nil {
+			return err
+		}
+		if err := doFile(f, out, env, macroEnv); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func doFile(in io.Reader, out io.Writer, env, macroEnv *object.Env) error {
